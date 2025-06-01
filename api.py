@@ -21,6 +21,25 @@ HEADERS = {
     "Authorization": f"Bearer {API_KEY}",
 }
 
+def get_models():
+    response = requests.get(f"{URL}/models/", headers=HEADERS)
+    models = response.json()
+    filtered_data = []
+
+    for i in models:
+        updated_at = i.get('updated_at')
+        created_at = i.get('created_at')
+        updated_at = timestamp_to_datetime(updated_at)
+        created_at = timestamp_to_datetime(created_at)
+
+        filtered_data.append({
+            "Chatbot naam": i.get('name'),
+            "datum aangemaakt": created_at,
+            "laatst bijgewerkt": updated_at,
+            })
+
+    return filtered_data
+
 def get_messages(channel_id):
     response = requests.get(f"{URL}/channels/{channel_id}/messages", headers=HEADERS)
     messages = response.json()
@@ -32,7 +51,7 @@ def get_messages(channel_id):
 
         filtered_data.append({
             "content": i.get('content'),
-            "laatst_bijgewerkt": updated_at,
+            "laatst bijgewerkt": updated_at,
             })
 
     return filtered_data
@@ -47,14 +66,16 @@ def get_channels():
         updated_at = timestamp_to_datetime(updated_at) 
 
         filtered_data.append({
-            "channel_naam": i.get('name'),
-            "laatst_bijgewerkt": updated_at,
+            "channel naam": i.get('name'),
+            "laatst bijgewerkt": updated_at,
             })
         
     return filtered_data 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
 #     messages = get_messages("d968f28b-26e4-40c5-aea9-558c964b01d9")
 #     channels = get_channels()
+    models = get_models()
 #     print(messages)
 #     print(channels)
+    print(models)
