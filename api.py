@@ -3,6 +3,7 @@
 # in de .env file vermeld ik de API KEY
 import requests
 import os
+import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,12 +25,16 @@ def get_channels():
     filter = []
 
     for i in channels:
+        updated_at = i.get('updated_at')
+        updated_at = updated_at / 1_000_000_000
+        updated_at = datetime.datetime.fromtimestamp(updated_at).strftime("%Y-%m-%d %H:%M:%S")
+
         filter.append({
             "channel_naam": i.get('name'),
-            "laatst_bijgewerkt": i.get("updated_at"),
+            "laatst_bijgewerkt": updated_at,
             })
         
-    return filter  # dit geeft channel_naam en laatst_bijgewerkt, maar laatst_bijgewerkt is in timestamp format
+    return filter  
 
 if __name__ == "__main__":
     # messages = get_messages("d968f28b-26e4-40c5-aea9-558c964b01d9")
