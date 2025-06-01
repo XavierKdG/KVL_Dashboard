@@ -71,10 +71,24 @@ def get_channels():
         
     return filtered_data 
 
+def get_feedback():
+    response = requests.get(f"{URL}/evaluations/feedbacks/all", headers=HEADERS)
+    feedback = response.json()
+    filtered_data = []
+
+    for i in feedback:
+        filtered_data.append({
+            "model": i.get('data')
+            })
+        
+    return filtered_data 
+
 if __name__ == "__main__":
 #     messages = get_messages("d968f28b-26e4-40c5-aea9-558c964b01d9")
 #     channels = get_channels()
-    models = get_models()
+    # models = get_models()
+    feedback = get_feedback()
 #     print(messages)
 #     print(channels)
-    print(models)
+    print(feedback)
+    # print(models)
