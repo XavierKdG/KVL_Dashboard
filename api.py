@@ -8,6 +8,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Functie om van timestamp naar datum_tijd om te zetten
+def timestamp_to_datetime(timestamp_variabel):
+    timestamp_variabel = timestamp_variabel / 1_000_000_000
+    datum = datetime.datetime.fromtimestamp(timestamp_variabel).strftime("%Y-%m-%d %H:%M:%S") 
+    return datum
+
 URL = 'http://localhost:8081/api/v1'
 API_KEY = os.getenv('API_KEY')
 
@@ -15,9 +21,21 @@ HEADERS = {
     "Authorization": f"Bearer {API_KEY}",
 }
 
-# def get_messages(channel_id):
-#     response = requests.get(f"{URL}/channels/{channel_id}/messages", headers=HEADERS)
-#     return response.json()
+def get_messages(channel_id):
+    response = requests.get(f"{URL}/channels/{channel_id}/messages", headers=HEADERS)
+    messages = response.json()
+    filtered_data = []
+
+    for i in messages:
+        updated_at = i.get('updated_at')
+        updated_at = timestamp_to_datetime(updated_at) 
+
+        filtered_data.append({
+            "content": i.get('content'),
+            "laatst_bijgewerkt": updated_at,
+            })
+
+    return filtered_data
 
 def get_channels():
     response = requests.get(f"{URL}/channels/", headers=HEADERS)
@@ -26,8 +44,7 @@ def get_channels():
 
     for i in channels:
         updated_at = i.get('updated_at')
-        updated_at = updated_at / 1_000_000_000
-        updated_at = datetime.datetime.fromtimestamp(updated_at).strftime("%Y-%m-%d %H:%M:%S") 
+        updated_at = timestamp_to_datetime(updated_at) 
 
         filtered_data.append({
             "channel_naam": i.get('name'),
@@ -36,8 +53,8 @@ def get_channels():
         
     return filtered_data 
 
-if __name__ == "__main__":
-    # messages = get_messages("d968f28b-26e4-40c5-aea9-558c964b01d9")
-    channels = get_channels()
-    # print(messages)
-    print(channels)
+# if __name__ == "__main__":
+#     messages = get_messages("d968f28b-26e4-40c5-aea9-558c964b01d9")
+#     channels = get_channels()
+#     print(messages)
+#     print(channels)
