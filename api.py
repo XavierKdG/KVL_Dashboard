@@ -1,5 +1,5 @@
 # KVL Dashboard met OpenWebUI API Endpoints
-# Voor gebruik installeer bijbehorende requirements
+# Voor gebruik installeer bijbehorende requirements (pip install -r requirements.txt)
 # in de .env file vermeld ik de API KEY
 import requests
 import os
@@ -22,19 +22,19 @@ HEADERS = {
 def get_channels():
     response = requests.get(f"{URL}/channels/", headers=HEADERS)
     channels = response.json()
-    filter = []
+    filtered_data = []
 
     for i in channels:
         updated_at = i.get('updated_at')
         updated_at = updated_at / 1_000_000_000
-        updated_at = datetime.datetime.fromtimestamp(updated_at).strftime("%Y-%m-%d %H:%M:%S")
+        updated_at = datetime.datetime.fromtimestamp(updated_at).strftime("%Y-%m-%d %H:%M:%S") 
 
-        filter.append({
+        filtered_data.append({
             "channel_naam": i.get('name'),
             "laatst_bijgewerkt": updated_at,
             })
         
-    return filter  
+    return filtered_data 
 
 if __name__ == "__main__":
     # messages = get_messages("d968f28b-26e4-40c5-aea9-558c964b01d9")
