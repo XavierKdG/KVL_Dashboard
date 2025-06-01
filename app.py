@@ -1,12 +1,12 @@
-# Om dashboard te runnen --> python -m streamlit run dashboard.py
+# Om dashboard te runnen --> python -m streamlit run app.py
 # dashboard runt op http://localhost:8501/
 
 import streamlit as st
-from api import get_channels, get_messages, get_models
+from api.openwebui import get_channels, get_messages, get_models
 import pandas as pd
 
-st.set_page_config(page_title="KVL Dashboard", layout="wide", page_icon="images_dashboard/KVL logo.png")
-st.image('images_dashboard/KVL logo.png', width=150)
+st.set_page_config(page_title="KVL Dashboard", layout="wide", page_icon="assets/KVL logo.png")
+st.image('assets/KVL logo.png', width=150)
 st.title("KVL Dashboard test")
 
 with st.spinner("Data ophalen van API"):

@@ -1,25 +1,24 @@
-# KVL Dashboard met OpenWebUI API Endpoints
-# Voor gebruik installeer bijbehorende requirements (pip install -r requirements.txt)
-# in de .env file vermeld ik de API KEY
+"""
+OpenWebUI API Endpoints verwerkt in een dashboard voor KVL
+Voor gebruik installeer bijbehorende requirements (pip install -r requirements.txt)
+Zorg dat je een .env bestand hebt met API_KEY=jouw_api_key_hier erin
+"""
+
 import requests
 import os
 import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
+API_KEY = os.getenv('API_KEY')
+URL = 'http://localhost:8081/api/v1'
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
 # Functie om van timestamp naar datum_tijd om te zetten
 def timestamp_to_datetime(timestamp_variabel):
     timestamp_variabel = timestamp_variabel / 1_000_000_000
     datum = datetime.datetime.fromtimestamp(timestamp_variabel).strftime("%Y-%m-%d %H:%M:%S") 
     return datum
-
-URL = 'http://localhost:8081/api/v1'
-API_KEY = os.getenv('API_KEY')
-
-HEADERS = {
-    "Authorization": f"Bearer {API_KEY}",
-}
 
 def get_models():
     response = requests.get(f"{URL}/models/", headers=HEADERS)
