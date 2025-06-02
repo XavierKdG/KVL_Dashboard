@@ -4,10 +4,12 @@ import time
 import pandas as pd
 import os
 
+from auth import require_login
 from api.config import timestamp_to_datetime
 from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, list_files_in_knowledgebase
-
 from api.files import upload_file
+
+require_login()
 
 st.logo("assets/KVL logo.png", size='large')
 st.title("Bestanden en Kennis")
