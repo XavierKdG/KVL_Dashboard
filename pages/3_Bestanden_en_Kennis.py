@@ -9,6 +9,7 @@ from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_kno
 
 from api.files import upload_file
 
+st.logo("assets/KVL logo.png", size='large')
 st.title("Bestanden en Kennis")
 
 tab1, tab2 = st.tabs(["📤 Upload bestanden", "📂 Bekijk kennisbank"])

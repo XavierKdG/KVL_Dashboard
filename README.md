@@ -1,63 +1,77 @@
-# KVL Dashboard
+# 📊 KVL Dashboard
 
-Een Streamlit-dashboard voor het visualiseren van data uit OpenWebUI API's, gebouwd als onderdeel van een stageproject bij KVL. Het dashboard toont informatie over chatkanalen, berichten en beschikbare modellen binnen een lokale OpenWebUI-instantie.
+Een Streamlit-dashboard ontwikkeld bij KVL voor het beheren van AI-bestanden, kennisbanken en chatdata via diverse API-integraties (OpenWebUI, Ollama, interne kennisbank-API).
 
-## 🔧 Functionaliteiten
+## 🚀 Functionaliteiten
 
-- ✅ Overzicht van alle chatkanalen met laatste activiteit
-- ✅ Weergave van berichten in een geselecteerd kanaal
-- ✅ Lijst van beschikbare AI-modellen (via Ollama of OpenWebUI API)
-- 🔜 Upload en verwerking van bestanden (in ontwikkeling)
-- 🔒 Autorisatie via API-key (.env)
+- ✅ Uploaden van bestanden en koppelen aan kennisbanken
+- ✅ Automatisch updaten van bestanden bij duplicaten (versiebeheer)
+- ✅ Inzien van kennisbankinhoud met metadata
+- ✅ Chatkanaalbeheer via OpenWebUI
+- ✅ Weergave van berichten per kanaal
+- ✅ Overzicht van beschikbare AI-modellen (via Ollama of OpenWebUI)
+- ✅ Google OAuth-login (via Streamlit-auth)
+- 🔒 API-key en authenticatieconfiguratie via `.env` en `secrets.toml`
 
-## 📦 Installatie
+## 🛠️ Installatie
 
-1. **Clone deze repository**
+1. **Clone de repository**
 
 ```bash
 git clone https://github.com/XavierKdG/KVL_Dashboard.git
-cd kvl-dashboard
-````
+cd KVL_Dashboard
 
-2. **Installeer dependencies**
+    Installeer dependencies
 
-Zorg dat je een virtuele omgeving gebruikt (aanbevolen), en installeer vervolgens:
+Bij voorkeur in een virtuele omgeving:
 
-```bash
 pip install -r requirements.txt
-```
 
-3. **Voeg een `.env` bestand toe**
+    Voeg .env toe
 
-Maak een `.env` bestand aan in de root van je project en voeg hierin je API-key toe:
+Plaats in de root van het project een .env met:
 
-```env
-API_KEY=jouw_api_key_hier
-```
+API_KEY=jouw_api_key
 
-4. **Start het dashboard**
+    Configureer Google OAuth (optioneel maar aanbevolen)
 
-```bash
+Maak .streamlit/secrets.toml aan met OIDC-configuratie voor login:
+
+[auth]
+redirect_uri = "http://localhost:8501/oauth2callback"
+cookie_secret = "geheime_waarde"
+
+[auth.google]
+client_id = "jouw_client_id.apps.googleusercontent.com"
+client_secret = "jouw_client_secret"
+server_metadata_url = "https://accounts.google.com/.well-known/openid-configuration"
+
+    Start het dashboard
+
 streamlit run app.py
-```
 
-*Als `streamlit` niet herkend wordt, probeer dan:*
+Indien streamlit niet herkend wordt:
 
-```bash
 python -m streamlit run app.py
-```
 
-## 📡 API Endpoints (OpenWebUI)
+✅ Vereisten
 
-De data wordt opgehaald uit de [OpenWebUI API](http://localhost:8081/api/v1), onder andere via:
+    Python 3.9 of hoger
 
-* `GET /channels/` — lijst van kanalen
-* `GET /channels/{id}/messages` — berichten in een kanaal
-* `GET /models/` — beschikbare AI-modellen
+    Streamlit >= 1.30
 
-## 📌 Vereisten
+    Authlib geïnstalleerd (voor login):
 
-* Python 3.8 of hoger
-* OpenWebUI lokaal draaiend op port `8081`
-* API-key in `.env` bestand
+    pip install Authlib
 
+    OpenWebUI draait lokaal op poort 8081
+
+    Eventueel: lokale Ollama-service voor modeloverzicht
+
+🔒 Beveiliging & Authenticatie
+
+    OAuth-authenticatie via Google (OpenID Connect)
+
+    API-key vereist voor toegang tot backend
+
+    CORS & cookiebeheer via Streamlit-auth handled automatisch
