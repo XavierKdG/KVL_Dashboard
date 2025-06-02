@@ -14,11 +14,17 @@ API_KEY = os.getenv('API_KEY')
 URL = 'http://localhost:8081/api/v1'
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 
-# Functie om van timestamp naar datum_tijd om te zetten
-def timestamp_to_datetime(timestamp_variabel):
-    timestamp_variabel = timestamp_variabel / 1_000_000_000
-    datum = datetime.datetime.fromtimestamp(timestamp_variabel).strftime("%Y-%m-%d %H:%M:%S") 
-    return datum
+def timestamp_to_datetime(ts):
+    if not ts or ts <= 0:
+        return "-"
+
+    if ts > 1e12:
+        ts = ts / 1_000_000_000
+
+    try:
+        return datetime.datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return "ongeldige datum"
 
 def get_models():
     response = requests.get(f"{URL}/models/", headers=HEADERS)
@@ -95,6 +101,15 @@ def get_knowledge():
             })
         
     return filtered_data
+
+def get_knowledge_by_id(knowledge_id):
+    response = requests.get(f"{URL}/knowledge/{knowledge_id}", headers=HEADERS)
+    
+    if response.status_code != 200:
+        return {"error": f"Kan kennisbank niet ophalen: {response.status_code} - {response.text}"}
+    
+    return response.json()
+
 
 def upload_and_add_to_knowledgebase(file_object=None, knowledge_id=None, only_upload=False, file_id=None):
     if only_upload and file_object:
