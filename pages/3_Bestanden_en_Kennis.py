@@ -3,7 +3,11 @@ import datetime
 import time
 import pandas as pd
 import os
-from api.openwebui import get_knowledge, upload_and_add_to_knowledgebase, get_knowledge_by_id, timestamp_to_datetime
+
+from api.config import timestamp_to_datetime
+from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, list_files_in_knowledgebase
+
+from api.files import upload_file
 
 st.title("Bestanden en Kennis")
 
@@ -28,7 +32,7 @@ with tab1:
                 if bestand.name in st.session_state.recent_uploaded_names:
                     continue  
 
-                result = upload_and_add_to_knowledgebase(bestand, knowledge_id=None, only_upload=True)
+                result = upload_file(bestand)
                 if "error" in result:
                     st.error(f"{bestand.name}: {result['error']}")
                 else:
@@ -49,21 +53,25 @@ with tab1:
 
             with st.spinner("Bezig met koppelen aan kennisbank..."):
                 bestaande_bestanden = get_knowledge_by_id(kennisbank_id)
-                bestaande_ids = {b["id"] for b in bestaande_bestanden.get("files", [])}
+                bestaande_namen = {b.get("meta", {}).get("name") for b in bestaande_bestanden.get("files", [])}
 
                 for f in st.session_state.uploaded_files:
                     file_id = f["file_id"]
                     bestand_naam = f["name"]
 
-                    status = "geüpdatet" if file_id in bestaande_ids else "toegevoegd"
-
-                    result = upload_and_add_to_knowledgebase(None, kennisbank_id, file_id=file_id)
+                    if bestand_naam in bestaande_namen:
+                        result = update_file_in_knowledgebase(kennisbank_id, file_id)
+                        status = "geüpdatet"
+                    else:
+                        result = add_file_to_knowledgebase(kennisbank_id, file_id)
+                        status = "toegevoegd"
 
                     if "success" in result:
                         st.success(f"✅ Bestand '{bestand_naam}' is {status} aan {kennisbank_dropdown}")
+                    elif "Duplicate content detected" in result.get("error", ""):
+                        st.info(f"ℹ️ Bestand '{bestand_naam}' is al identiek aanwezig in {kennisbank_dropdown} - geen wijzigingen nodig.")
                     else:
                         st.error(f"❌ Bestand '{bestand_naam}': {result['error']}")
-
 
             st.session_state.uploaded_files = []
             st.session_state.recent_uploaded_names = []
@@ -82,29 +90,12 @@ with tab2:
     kennisbank_dropdown = st.selectbox("Selecteer een kennisbank", namen_knowledge, key="viewer")
 
     kennisbank_id = next(k["knowledge_id"] for k in kennisbanken if k["name"] == kennisbank_dropdown)
-    details = get_knowledge_by_id(kennisbank_id)
+    result = list_files_in_knowledgebase(kennisbank_id)
 
-    if "error" in details:
-        st.error(details["error"])
-    elif not details.get("files"):
+    if "error" in result:
+        st.error(result["error"])
+    elif "empty" in result:
         st.info("📂 Deze kennisbank bevat nog geen bestanden.")
     else:
-        bestanden_info = []
-
-        for f in details["files"]:
-            file_meta = f.get("meta", {})
-            full_name = file_meta.get("name", f.get("id"))
-
-            name_without_ext, file_ext = os.path.splitext(full_name)
-            file_ext = file_ext.replace(".", "").lower()
-
-            bestanden_info.append({
-                "Bestandsnaam": name_without_ext,
-                "Bestandstype": file_ext,
-                "Geüpload op": timestamp_to_datetime(f.get("created_at")),
-                "Bijgewerkt op": timestamp_to_datetime(f.get("updated_at"))
-            })
-
-        df = pd.DataFrame(bestanden_info)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(result["data"], use_container_width=True)
 
