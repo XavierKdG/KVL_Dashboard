@@ -47,7 +47,6 @@ def add_file_to_knowledgebase(knowledge_id, file_id):
         return {"error": f"Koppelen mislukt: {response.status_code} - {response.text}"}
     
 def list_files_in_knowledgebase(knowledge_id):
-    import requests
     url = f"{URL}/knowledge/{knowledge_id}"
     response = requests.get(url, headers=HEADERS)
 
