@@ -10,18 +10,23 @@ def get_models():
     filtered_data = []
 
     for i in models:
-        updated_at = i.get('updated_at')
-        created_at = i.get('created_at')
-        updated_at = timestamp_to_datetime(updated_at)
-        created_at = timestamp_to_datetime(created_at)
+        meta = i.get("meta", {})
+        raw_tags = meta.get("tags", [])
+        tags = [tag.get("name") for tag in raw_tags if isinstance(tag, dict)]
 
-        filtered_data.append({
-            "Chatbot naam": i.get('name'),
-            "datum aangemaakt": created_at,
-            "laatst bijgewerkt": updated_at,
+        if i.get('is_active') == True:
+            filtered_data.append({
+                "Chatbot naam": i.get('name'),
+                "beschrijving": meta.get('description'),
+                "image": meta.get("profile_image_url"),
+                "datum aangemaakt": timestamp_to_datetime(i.get('created_at')),
+                "laatst bijgewerkt": timestamp_to_datetime(i.get('updated_at')),
+                "tags": tags,
+                "metadata": meta
             })
 
     return filtered_data
+
 
 def get_basemodels():
     response = requests.get(f"{URL}/models/base", headers=HEADERS)
@@ -29,19 +34,18 @@ def get_basemodels():
     filtered_data = []
 
     for item in basemodels:
-        updated_at = timestamp_to_datetime(item.get("updated_at"))
-        created_at = timestamp_to_datetime(item.get("created_at"))
         meta = item.get("meta", {})
-        tags = item.get('tags', {})
+        raw_tags = meta.get("tags", [])
+        tags = [tag.get("name") for tag in raw_tags if isinstance(tag, dict)]
 
         if item.get("is_active"):
             filtered_data.append({
                 "Chatbot naam": item.get("name"),
-                "datum aangemaakt": created_at,
-                "laatst bijgewerkt": updated_at,
+                "datum aangemaakt": timestamp_to_datetime(item.get("created_at")),
+                "laatst bijgewerkt": timestamp_to_datetime(item.get("updated_at")),
                 "image": meta.get("profile_image_url"),
                 "tags": tags,
-                "metadata": meta,
+                "metadata": meta
             })
 
     return filtered_data
