@@ -14,3 +14,4 @@ def require_login():
         if st.button("Inloggen met Google"):
             st.login("google")
         st.stop()
+        

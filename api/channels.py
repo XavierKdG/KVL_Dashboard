@@ -5,24 +5,45 @@ import datetime
 from .config import URL, HEADERS, JSON_HEADERS, timestamp_to_datetime
 
 def get_channels():
+    """Haalt een lijst van kanalen op.
+
+    Geeft een lege lijst terug bij fouten of een ongeldig antwoord.
+    """
     response = requests.get(f"{URL}/channels/", headers=HEADERS)
-    channels = response.json()
+    if response.status_code != 200:
+        return []
+
+    try:
+        channels = response.json()
+    except ValueError:
+        return []
     filtered_data = []
 
     for i in channels:
-        updated_at = i.get('updated_at')
-        updated_at = timestamp_to_datetime(updated_at) 
+        updated_at = i.get("updated_at")
+        updated_at = timestamp_to_datetime(updated_at)
 
-        filtered_data.append({
-            "channel naam": i.get('name'),
-            "laatst bijgewerkt": updated_at,
-            })
+        filtered_data.append(
+            {
+                "id": i.get("id"),
+                "channel naam": i.get("name"),
+                "laatst bijgewerkt": updated_at,
+            }
+        )
         
     return filtered_data 
 
 def get_messages(channel_id):
+    """Haalt berichten op voor een specifiek kanaal."""
     response = requests.get(f"{URL}/channels/{channel_id}/messages", headers=HEADERS)
-    messages = response.json()
+
+    if response.status_code != 200:
+        return []
+
+    try:
+        messages = response.json()
+    except ValueError:
+        return []
     filtered_data = []
 
     for i in messages:
