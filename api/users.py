@@ -53,14 +53,14 @@ def delete_user(user_id):
     return response.ok
 
 # Debug: sla gebruikers op als JSON in de map 'debug'
-gebruikers = get_users()
-debug_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "debug"))
-os.makedirs(debug_folder, exist_ok=True)
-debug_file_path = os.path.join(debug_folder, "debug_users.json")
+# gebruikers = get_users()
+# debug_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "debug"))
+# os.makedirs(debug_folder, exist_ok=True)
+# debug_file_path = os.path.join(debug_folder, "debug_users.json")
 
-with open(debug_file_path, "w", encoding="utf-8") as f:
-    json.dump(gebruikers, f, ensure_ascii=False, indent=2)
+# with open(debug_file_path, "w", encoding="utf-8") as f:
+#     json.dump(gebruikers, f, ensure_ascii=False, indent=2)
 
-print(f"✅ Gebruikers opgeslagen in {debug_file_path}")
+# print(f"✅ Gebruikers opgeslagen in {debug_file_path}")
 
 

@@ -70,7 +70,8 @@ def list_files_in_knowledgebase(knowledge_id):
             "Bestandsnaam": name_without_ext,
             "Bestandstype": file_ext,
             "Geüpload op": timestamp_to_datetime(f.get("created_at")),
-            "Bijgewerkt op": timestamp_to_datetime(f.get("updated_at"))
+            "Bijgewerkt op": timestamp_to_datetime(f.get("updated_at")),
+            "file_id": f.get("id") 
         })
 
     df = pd.DataFrame(bestanden_info)

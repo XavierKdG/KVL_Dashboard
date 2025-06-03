@@ -1,4 +1,4 @@
-from .config import timestamp_to_datetime
+from .config import timestamp_to_datetime, tijd_verschil_als_tekst
 from .channels import get_channels, get_messages
 from .knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase
 from .evaluations import get_feedback, get_feedback_summary

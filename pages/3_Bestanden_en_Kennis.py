@@ -3,6 +3,7 @@ import datetime
 import time
 import pandas as pd
 import os
+import plotly.express as px
 
 from auth import require_login
 from api.config import timestamp_to_datetime
@@ -86,19 +87,91 @@ with tab1:
             st.rerun()
 
 with tab2:
-    st.subheader("Inhoud van kennisbank bekijken")
-
+    st.subheader("📚 Inhoud van kennisbanken")
     kennisbanken = get_knowledge()
-    namen_knowledge = [k["name"] for k in kennisbanken]
-    kennisbank_dropdown = st.selectbox("Selecteer een kennisbank", namen_knowledge, key="viewer")
 
-    kennisbank_id = next(k["knowledge_id"] for k in kennisbanken if k["name"] == kennisbank_dropdown)
-    result = list_files_in_knowledgebase(kennisbank_id)
-
-    if "error" in result:
-        st.error(result["error"])
-    elif "empty" in result:
-        st.info("📂 Deze kennisbank bevat nog geen bestanden.")
+    if not kennisbanken:
+        st.warning("Geen kennisbanken gevonden.")
     else:
-        st.dataframe(result["data"], use_container_width=True)
+        namen_knowledge = [k["name"] for k in kennisbanken]
+        kennisbank_dropdown = st.selectbox("Selecteer een kennisbank", namen_knowledge, key="viewer")
 
+        kennisbank_id = next(k["knowledge_id"] for k in kennisbanken if k["name"] == kennisbank_dropdown)
+        result = list_files_in_knowledgebase(kennisbank_id)
+
+        if "error" in result:
+            st.error(result["error"])
+        elif "empty" in result:
+            st.info("📂 Deze kennisbank bevat nog geen bestanden.")
+        else:
+            df = result["data"]
+
+            df["Geüpload op"] = pd.to_datetime(df["Geüpload op"], errors="coerce")
+            df["Bijgewerkt op"] = pd.to_datetime(df["Bijgewerkt op"], errors="coerce")
+
+            st.markdown("### 📊 Statistieken")
+            st.write(f"**Aantal bestanden**: {len(df)}")
+
+            last_updated = df["Bijgewerkt op"].max()
+            now = datetime.datetime.now()
+            time_diff = now - last_updated
+
+            if time_diff.total_seconds() < 60:
+                geleden = f"{int(time_diff.total_seconds())} seconden geleden"
+            elif time_diff.total_seconds() < 3600:
+                minuten = int(time_diff.total_seconds() // 60)
+                geleden = f"{minuten} minuten geleden"
+            elif time_diff.total_seconds() < 86400:
+                uren = int(time_diff.total_seconds() // 3600)
+                geleden = f"{uren} uur geleden"
+            else:
+                dagen = int(time_diff.total_seconds() // 86400)
+                geleden = f"{dagen} dagen geleden"
+
+            st.write(f"**Meest recent bijgewerkt:** {last_updated.strftime('%Y-%m-%d %H:%M')} _({geleden})_")
+
+            filetypes = df["Bestandstype"].dropna().unique().tolist()
+            selected_types = st.multiselect("Filter op bestandstype", filetypes, default=filetypes)
+
+            search_query = st.text_input("Zoek op bestandsnaam")
+
+            filtered_df = df[
+                df["Bestandstype"].isin(selected_types) &
+                df["Bestandsnaam"].str.contains(search_query, case=False, na=False)
+            ]
+
+            st.dataframe(filtered_df, use_container_width=True)
+
+            st.markdown("### 📁 Uploads per bestandstype")
+            filetype_counts = df["Bestandstype"].value_counts().reset_index()
+            filetype_counts.columns = ["Bestandstype", "Aantal bestanden"]
+            kleuren = ["#EEA400", "#36a9e1", "#3AAA35", "#00A79F"]
+
+            fig = px.bar(
+                filetype_counts,
+                x="Bestandstype",
+                y="Aantal bestanden",
+                title="Aantal bestanden per bestandstype",
+                color="Bestandstype", 
+                color_discrete_sequence=kleuren
+            )
+
+            fig.update_layout(
+                xaxis_tickangle=0,
+                showlegend=False,  
+                plot_bgcolor="rgba(0,0,0,0)",  
+                paper_bgcolor="rgba(0,0,0,0)", 
+                font=dict(color="white")  
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
+
+            st.markdown("### 🔍 Bekijk details van een bestand")
+            selected_file = st.selectbox("Selecteer een bestand", df["Bestandsnaam"].tolist())
+            selected_row = df[df["Bestandsnaam"] == selected_file].iloc[0]
+
+            st.info(f"""
+            **Bestandsnaam:** {selected_row['Bestandsnaam']}.{selected_row['Bestandstype']}  
+            **Geüpload op:** {selected_row['Geüpload op'].strftime('%Y-%m-%d %H:%M')}  
+            **Bijgewerkt op:** {selected_row['Bijgewerkt op'].strftime('%Y-%m-%d %H:%M')}
+            """)
