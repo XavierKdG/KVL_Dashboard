@@ -3,8 +3,9 @@ import pandas as pd
 import plotly.express as px
 
 from auth import require_login
-from api.channels import get_channels, get_messages
-from api.chats import get_all_chats
+from api.channels import get_channels, get_messages, get_message_counts_by_channel
+from api.notes import get_note_counts_by_user
+from api.chats import get_all_chats, get_chat_counts_by_user
 
 require_login()
 
@@ -25,11 +26,12 @@ if "id" not in channels_df.columns:
     st.error("Kanaal-ID ontbreekt in de opgehaalde data")
     st.stop()
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📂 Kanalen",
     "💬 Berichten",
     "📈 Berichtenactiviteit",
     "💬 Chatactiviteit",
+    "📊 Overzicht",
 ])
 
 with tab1:
@@ -87,3 +89,30 @@ with tab4:
         st.dataframe(counts, use_container_width=True)
     else:
         st.info("Geen chatdata beschikbaar.")
+
+with tab5:
+    st.subheader("Overzicht statistieken")
+
+    msg_counts = pd.DataFrame(get_message_counts_by_channel())
+    if not msg_counts.empty:
+        fig_msgs = px.bar(msg_counts, x="kanaal", y="aantal", title="Berichten per kanaal")
+        st.plotly_chart(fig_msgs, use_container_width=True)
+        st.dataframe(msg_counts, use_container_width=True)
+    else:
+        st.info("Geen berichtenstatistieken.")
+
+    chat_counts = get_chat_counts_by_user()
+    if not chat_counts.empty:
+        fig_chats = px.bar(chat_counts, x="user_id", y="Aantal chats", title="Chats per gebruiker")
+        st.plotly_chart(fig_chats, use_container_width=True)
+        st.dataframe(chat_counts, use_container_width=True)
+    else:
+        st.info("Geen chatstatistieken.")
+
+    note_counts = get_note_counts_by_user()
+    if not note_counts.empty:
+        fig_notes = px.bar(note_counts, x="user_id", y="Aantal notities", title="Notities per gebruiker")
+        st.plotly_chart(fig_notes, use_container_width=True)
+        st.dataframe(note_counts, use_container_width=True)
+    else:
+        st.info("Geen notitiegegevens.")

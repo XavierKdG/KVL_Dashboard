@@ -48,6 +48,22 @@ def get_chat_usage_summary():
 
     return summary
 
+def get_chat_counts_by_user():
+    """Geeft het aantal chats per gebruiker terug als DataFrame."""
+    data = get_all_chats()
+    df = pd.DataFrame(data)
+    if df.empty or "user_id" not in df:
+        return pd.DataFrame()
+
+    counts = (
+        df.groupby("user_id")
+        .size()
+        .reset_index(name="Aantal chats")
+        .sort_values("Aantal chats", ascending=False)
+    )
+    return counts
+
+
 ###### debug gedeelte voor /chats/all/db
 # debug_folder = "debug"
 # os.makedirs(debug_folder, exist_ok=True)

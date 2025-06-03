@@ -56,3 +56,18 @@ def get_messages(channel_id):
             })
 
     return filtered_data
+
+def get_message_counts_by_channel():
+    """Geeft een lijst met het aantal berichten per kanaal."""
+    channels = get_channels()
+    stats = []
+    for ch in channels:
+        channel_id = ch.get("id")
+        if channel_id is None:
+            continue
+        messages = get_messages(channel_id)
+        stats.append({
+            "kanaal": ch.get("channel naam"),
+            "aantal": len(messages),
+        })
+    return stats
