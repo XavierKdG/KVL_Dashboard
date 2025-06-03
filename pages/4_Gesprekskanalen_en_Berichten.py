@@ -4,14 +4,16 @@ import plotly.express as px
 
 from auth import require_login
 from api.channels import get_channels, get_messages
+from api.chats import get_all_chats
 
 require_login()
 
-st.logo("assets/KVL logo.png", size="large")
+st.logo("static/KVL logo.png", size="large")
 st.title("Gesprekskanalen & Berichten")
 
 with st.spinner("Data ophalen..."):
     channels = get_channels()
+    chats = get_all_chats()
 
 if not channels:
     st.warning("Geen kanalen gevonden.")
@@ -23,17 +25,18 @@ if "id" not in channels_df.columns:
     st.error("Kanaal-ID ontbreekt in de opgehaalde data")
     st.stop()
 
-tab_channels, tab_messages, tab_activity = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📂 Kanalen",
     "💬 Berichten",
-    "📈 Activiteit",
+    "📈 Berichtenactiviteit",
+    "💬 Chatactiviteit",
 ])
 
-with tab_channels:
+with tab1:
     st.subheader("Overzicht van kanalen")
     st.dataframe(channels_df[["id", "channel naam", "laatst bijgewerkt"]], use_container_width=True)
 
-with tab_messages:
+with tab2:
     st.subheader("Berichten per kanaal")
     channel_names = channels_df["channel naam"].tolist()
     selected = st.selectbox("Kies een kanaal", channel_names)
@@ -53,7 +56,7 @@ with tab_messages:
     else:
         st.info("Geen berichten gevonden voor dit kanaal.")
 
-with tab_activity:
+with tab3:
     st.subheader("Berichtenactiviteit")
     all_counts = []
     with st.spinner("Activiteit berekenen..."):
@@ -72,3 +75,15 @@ with tab_activity:
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Geen berichtenactiviteit beschikbaar.")
+
+with tab4:
+    st.subheader("Chatactiviteit per dag")
+    if chats:
+        df_chats = pd.DataFrame(chats)
+        df_chats["datum"] = pd.to_datetime(df_chats["created_at"], errors="coerce").dt.date
+        counts = df_chats.groupby("datum").size().reset_index(name="Aantal chats")
+        fig = px.line(counts, x="datum", y="Aantal chats", markers=True)
+        st.plotly_chart(fig, use_container_width=True)
+        st.dataframe(counts, use_container_width=True)
+    else:
+        st.info("Geen chatdata beschikbaar.")

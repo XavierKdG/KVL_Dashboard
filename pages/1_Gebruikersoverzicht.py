@@ -8,7 +8,7 @@ from api.groups import get_groups, create_group, add_user_to_group, update_group
 from auth import require_login
 
 require_login()
-st.logo("assets/KVL logo.png", size='large')
+st.logo("static/KVL logo.png", size='large')
 
 with st.spinner("Data ophalen..."):
     gebruikers = get_users()
@@ -16,7 +16,7 @@ with st.spinner("Data ophalen..."):
 
 st.title("👥 Gebruikers- en Groepsbeheer")
 
-tab1, tab2, tab3 = st.tabs(["Gebruikers", "Groepen", "Groepsbeheer"])
+tab1, tab2, tab3 = st.tabs(["👤 Gebruikers", "👥 Groepen", "🛠️ Groepsbeheer"])
 
 with tab1:
     st.header("📄 Gebruikersoverzicht")

@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 from auth import require_login
 
 require_login()
-st.logo("assets/KVL logo.png", size='large')
+st.logo("static/KVL logo.png", size='large')
 st.title("Modellen & LLM-gebruik")
 
 with st.spinner("Alle data ophalen..."):
@@ -17,7 +17,6 @@ with st.spinner("Alle data ophalen..."):
     basemodels = get_basemodels()
     usage_df = get_chat_usage_summary()
     feedback_df = get_feedback_summary()
-
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 Overzicht", "🏷️ Tags", "🧠 Basismodellen", "📊 Meest gebruikte modellen", "📝 Feedback op modellen"])
 
