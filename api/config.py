@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
-URL = 'http://localhost:8081/api/v1'
+URL = 'http://localhost:8080/api/v1' # verander zodra openwebui op domein gehost is
 HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 JSON_HEADERS = {**HEADERS, "Content-Type": "application/json"}
 
