@@ -113,7 +113,7 @@ feedback_count = 0
 delta_rating = None
 avg_rating = None
 if not feedback_summary.empty:
-    rating_cols = [c for c in ["👍", "👎", "⚪️"] if c in feedback_summary.columns]
+    rating_cols = [c for c in ["👍", "👎"] if c in feedback_summary.columns]
     if rating_cols:
         feedback_count = int(feedback_summary[rating_cols].sum().sum())
     avg_rating = feedback_summary["Gemiddelde beoordeling"].mean()
@@ -147,6 +147,10 @@ if models:
     st.subheader("📌 Nieuwste modellen")
     model_df = pd.DataFrame(models)
     column_config = {}
+    if "image" in model_df.columns:
+        column_config["image"] = st.column_config.ImageColumn(
+            "Profielfoto", help="Profielfoto van het model"
+        )
     if "beschrijving" in model_df.columns:
         column_config["beschrijving"] = st.column_config.TextColumn(
             "beschrijving", width="medium"
@@ -156,6 +160,33 @@ if models:
             model_df["laatst bijgewerkt"], errors="coerce"
         )
         model_df = model_df.sort_values("laatst bijgewerkt", ascending=False)
+        cols = [c for c in model_df.columns if c not in ["metadata"]]
+    if "image" in cols and "Chatbot naam" in cols:
+        cols.insert(cols.index("Chatbot naam"), cols.pop(cols.index("image")))
+    st.dataframe(
+        model_df[cols].head(),
+        use_container_width=True,
+        column_config=column_config,
+        hide_index=True,
+    )
+
+if channels:
+    st.subheader("📢 Nieuwste kanalen")
+    channels_df = pd.DataFrame(channels)
+    if "laatst bijgewerkt" in channels_df.columns:
+        channels_df["laatst bijgewerkt"] = pd.to_datetime(
+            channels_df["laatst bijgewerkt"], errors="coerce"
+        )
+        channels_df = channels_df.sort_values("laatst bijgewerkt", ascending=False)
+    st.dataframe(channels_df.head(), use_container_width=True)
+
+if not chat_summary.empty:
+    st.subheader("📈 Chatgebruik per model")
+    kleuren = ["#EEA400", "#36a9e1", "#3AAA35", "#00A79F"]
+    fig = px.bar(chat_summary, x="model", y="Aantal chats", color="model",
+                 color_discrete_sequence=kleuren)
+    fig.update_layout(showlegend=False)
+    model_df = model_df.sort_values("laatst bijgewerkt", ascending=False)
     cols = [c for c in model_df.columns if c not in ["image", "metadata"]]
     st.dataframe(
         model_df[cols].head(),
@@ -180,6 +211,7 @@ if not chat_summary.empty:
                  color_discrete_sequence=kleuren)
     fig.update_layout(showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
+
 if not feedback_summary.empty:
     st.subheader("📝 Feedbackoverzicht")
     st.dataframe(feedback_summary.head(), use_container_width=True)

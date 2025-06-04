@@ -4,6 +4,21 @@ import os
 import datetime
 from .config import URL, HEADERS, JSON_HEADERS, timestamp_to_datetime
 
+def _format_file_size(size):
+    """Converts a size in bytes to a human readable string."""
+    if size is None:
+        return None
+    try:
+        size = int(size)
+    except (TypeError, ValueError):
+        return None
+
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
+        if size < 1024:
+            return f"{size:.2f} {unit}"
+        size /= 1024
+    return f"{size:.1f} PB"
+
 def get_knowledge():
     response = requests.get(f"{URL}/knowledge/", headers=HEADERS)
     knowledge = response.json()
@@ -69,9 +84,13 @@ def list_files_in_knowledgebase(knowledge_id):
         bestanden_info.append({
             "Bestandsnaam": name_without_ext,
             "Bestandstype": file_ext,
+            "Bestandsgrootte": _format_file_size(file_meta.get("size") or file_meta.get("file_size")),
+            "Content type": file_meta.get("content_type"),
+            "Collectie": file_meta.get("collection_name"),
             "Geüpload op": timestamp_to_datetime(f.get("created_at")),
             "Bijgewerkt op": timestamp_to_datetime(f.get("updated_at")),
-            "file_id": f.get("id") 
+            "file_id": f.get("id"),
+            "metadata": file_meta,
         })
 
     df = pd.DataFrame(bestanden_info)

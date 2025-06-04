@@ -1,6 +1,6 @@
 from .config import timestamp_to_datetime, tijd_verschil_als_tekst
 from .channels import get_channels, get_messages, get_message_counts_by_channel
-from .knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase
+from .knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, _format_file_size
 from .evaluations import get_feedback, get_feedback_summary
 from .models import get_models, get_basemodels
 from .files import upload_file

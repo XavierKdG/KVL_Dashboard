@@ -6,7 +6,8 @@ Een Streamlit-dashboard ontwikkeld bij KVL voor het beheren van AI-bestanden, ke
 
 - ✅ Uploaden van bestanden en koppelen aan kennisbanken  
 - ✅ Automatisch updaten van bestanden bij duplicaten (versiebeheer)  
-- ✅ Inzien van kennisbankinhoud met metadata  
+- ✅ Inzien van kennisbankinhoud met metadata
+- ✅ Detailweergave van bestanden inclusief content type en collectie
 - ✅ Chatkanaalbeheer via OpenWebUI  
 - ✅ Weergave van berichten per kanaal  
 - ✅ Overzicht van beschikbare AI-modellen (via Ollama of OpenWebUI)  

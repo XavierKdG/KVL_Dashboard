@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import datetime
 from .config import URL, HEADERS, JSON_HEADERS, timestamp_to_datetime
+from .users import get_users
 
 def get_notes():
     """Haalt alle notities op."""
@@ -27,7 +28,7 @@ def get_notes():
 
 
 def get_note_counts_by_user():
-    """Geeft het aantal notities per gebruiker terug als DataFrame."""
+    """Geeft het aantal notities per gebruiker terug als DataFrame met gebruikersnamen."""
     notes = get_notes()
     df = pd.DataFrame(notes)
     if df.empty or "user_id" not in df:
@@ -39,4 +40,11 @@ def get_note_counts_by_user():
         .reset_index(name="Aantal notities")
         .sort_values("Aantal notities", ascending=False)
     )
+    users = pd.DataFrame(get_users())
+    if not users.empty:
+        counts = counts.merge(users[["id", "Naam"]], left_on="user_id", right_on="id", how="left")
+        counts.drop(columns=["id"], inplace=True)
+        counts["Naam"].fillna(counts["user_id"], inplace=True)
+        counts.drop(columns=["user_id"], inplace=True)
+
     return counts

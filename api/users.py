@@ -3,6 +3,8 @@ import pandas as pd
 import os
 import json
 import datetime
+import base64
+import logging
 from .config import URL, HEADERS, JSON_HEADERS, timestamp_to_datetime
 
 def get_users():

@@ -4,6 +4,7 @@ import os
 import json
 import datetime
 from .config import URL, HEADERS, JSON_HEADERS, timestamp_to_datetime
+from .users import get_users
 
 def get_all_chats():
     response = requests.get(f"{URL}/chats/all/db", headers=HEADERS)
@@ -49,7 +50,7 @@ def get_chat_usage_summary():
     return summary
 
 def get_chat_counts_by_user():
-    """Geeft het aantal chats per gebruiker terug als DataFrame."""
+    """Geeft het aantal chats per gebruiker terug als DataFrame met gebruikersnamen."""
     data = get_all_chats()
     df = pd.DataFrame(data)
     if df.empty or "user_id" not in df:
@@ -61,6 +62,13 @@ def get_chat_counts_by_user():
         .reset_index(name="Aantal chats")
         .sort_values("Aantal chats", ascending=False)
     )
+    users = pd.DataFrame(get_users())
+    if not users.empty:
+        counts = counts.merge(users[["id", "Naam"]], left_on="user_id", right_on="id", how="left")
+        counts.drop(columns=["id"], inplace=True)
+        counts["Naam"].fillna(counts["user_id"], inplace=True)
+        counts.drop(columns=["user_id"], inplace=True)
+        
     return counts
 
 

@@ -74,7 +74,7 @@ with tab1:
                         st.markdown(f"**Rol:** {gebruiker.get('Rol', '-')}")
                         st.markdown(f"**ID:** `{gebruiker.get('id', '-')}`")
                         st.markdown(f"**Laatst actief:** {tijd_verschil_als_tekst(laatst_actief)}")
-
+                  
                     instellingen = gebruiker.get("Instellingen", {})
                     if instellingen:
                         with st.expander("⚙️ Instellingen"):

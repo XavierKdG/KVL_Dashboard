@@ -44,7 +44,8 @@ def get_feedback_summary():
     top_tags = tag_counts.groupby("model")["tags"].agg(lambda x: x.value_counts().index[0] if len(x) > 0 else None).reset_index(name="Top tag")
 
     summary = avg_scores.merge(counts, on="model", how="left").merge(top_tags, on="model", how="left")
-    summary = summary.rename(columns={"like": "👍", "dislike": "👎", "neutral": "⚪️"})
+    summary = summary.rename(columns={"like": "👍", "dislike": "👎"})
+    summary["Gemiddelde beoordeling"] = summary["Gemiddelde beoordeling"].round(1)
 
     return summary.sort_values("Gemiddelde beoordeling", ascending=False)
 

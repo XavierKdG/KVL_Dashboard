@@ -7,7 +7,7 @@ import plotly.express as px
 
 from auth import require_login
 from api.config import timestamp_to_datetime
-from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, list_files_in_knowledgebase
+from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, list_files_in_knowledgebase, get_all_collections
 from api.files import upload_file
 
 require_login()
@@ -101,11 +101,39 @@ with tab1:
             selected_file = st.selectbox("Selecteer een bestand", df["Bestandsnaam"].tolist())
             selected_row = df[df["Bestandsnaam"] == selected_file].iloc[0]
 
-            st.info(f"""
-            **Bestandsnaam:** {selected_row['Bestandsnaam']}.{selected_row['Bestandstype']}  
-            **Geüpload op:** {selected_row['Geüpload op'].strftime('%Y-%m-%d %H:%M')}  
-            **Bijgewerkt op:** {selected_row['Bijgewerkt op'].strftime('%Y-%m-%d %H:%M')}
-            """)
+            st.markdown(f"#### {selected_row['Bestandsnaam']}.{selected_row['Bestandstype']}")
+
+            details = [
+                f"**Geüpload op:** {selected_row['Geüpload op'].strftime('%Y-%m-%d %H:%M')}",
+                f"**Bijgewerkt op:** {selected_row['Bijgewerkt op'].strftime('%Y-%m-%d %H:%M')}"
+            ]
+
+            if not pd.isna(selected_row.get('Bestandsgrootte')):
+                details.append(f"**Bestandsgrootte:** {selected_row['Bestandsgrootte']}")
+            if not pd.isna(selected_row.get('Content type')):
+                details.append(f"**Content type:** {selected_row['Content type']}")
+            if not pd.isna(selected_row.get('Collectie')):
+                details.append(f"**Collectie:** {selected_row['Collectie']}")
+            if not pd.isna(selected_row.get('Geüpload door')):
+                details.append(f"**Geüpload door:** {selected_row['Geüpload door']}")
+            if not pd.isna(selected_row.get("Aantal pagina's")):
+                details.append(f"**Aantal pagina's:** {selected_row['Aantal pagina\'s']}")
+            if not pd.isna(selected_row.get('Aantal woorden')):
+                details.append(f"**Aantal woorden:** {selected_row['Aantal woorden']}")
+            if selected_row.get('Tags'):
+                details.append(f"**Tags:** {', '.join(selected_row['Tags'])}")
+
+            st.markdown("""
+                <div style="background-color:#00A79F; padding:16px; border-radius:12px; color:#000000;">
+                <b>Geüpload op:</b> 2025-05-30 11:03<br>
+                <b>Bijgewerkt op:</b> 2025-05-30 11:03<br>
+                <b>Bestandsgrootte:</b> 6.81 KB<br>
+                <b>Content type:</b> application/vnd.openxmlformats-officedocument.wordprocessingml.document<br>
+                <b>Collectie:</b> f6af2b5c-e116-4a22-8c13-e2e08603d5a4
+                </div>
+                """, unsafe_allow_html=True)
+
+
 
 with tab2:
     st.subheader("📈 Bestandstrends")

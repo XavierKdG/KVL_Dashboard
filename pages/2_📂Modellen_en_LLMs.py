@@ -6,6 +6,7 @@ from api.evaluations import get_feedback_summary
 import plotly.express as px
 from collections import defaultdict
 import plotly.graph_objects as go
+import re
 from auth import require_login
 
 require_login()
@@ -17,6 +18,13 @@ with st.spinner("Alle data ophalen..."):
     basemodels = get_basemodels()
     usage_df = get_chat_usage_summary()
     feedback_df = get_feedback_summary()
+
+def prettify_model_name(name: str) -> str:
+    if not isinstance(name, str):
+        return name
+    pretty = name.replace("-", " ").replace("_", " ").title()
+    pretty = re.sub(r"\bKvl\b", "KVL", pretty)
+    return pretty
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 Overzicht", "🏷️ Tags", "🧠 Basismodellen", "📊 Meest gebruikte modellen", "📝 Feedback op modellen"])
 
@@ -148,7 +156,11 @@ with tab4:
             title="🔝 Meest gebruikte modellen",
             labels={"model": "Model", "Aantal chats": "Aantal chats"},
             color="Aantal chats",
-            color_continuous_scale="Blues",
+            color_continuous_scale=[
+                (0.0, "#e0f7f8"),
+                (0.5, "#66c7ca"),
+                (1.0, "#00888E")
+            ],
             hover_name="model",
         )
         fig.update_layout(yaxis_title=None, xaxis_title="Aantal chats", height=400)
@@ -162,29 +174,30 @@ with tab5:
     if feedback_df.empty:
         st.info("Geen feedback gevonden.")
     else:
-        feedback_df_sorted = feedback_df.sort_values("Gemiddelde beoordeling", ascending=False)
+        feedback_df_sorted = feedback_df.sort_values("Gemiddelde beoordeling", ascending=True)
+        feedback_df_sorted["Model naam"] = feedback_df_sorted["model"].apply(prettify_model_name)
 
-        for col in ["👍", "👎", "⚪️"]:
+        for col in ["👍", "👎"]:
             if col not in feedback_df_sorted.columns:
                 feedback_df_sorted[col] = 0
 
         st.dataframe(
-            feedback_df_sorted.set_index("model")[["Gemiddelde beoordeling", "👍", "👎", "⚪️", "Top tag"]],
+            feedback_df_sorted.set_index("Model naam")[["Gemiddelde beoordeling", "👍", "👎", "Top tag"]],
             use_container_width=True
         )
 
         fig = go.Figure()
         fig.add_trace(go.Bar(
-            x=feedback_df_sorted["model"],
+            x=feedback_df_sorted["Model naam"],
             y=feedback_df_sorted["👍"],
             name="👍 Likes",
-            marker_color="green"
+            marker_color="#3AAA35"
         ))
         fig.add_trace(go.Bar(
-            x=feedback_df_sorted["model"],
+            x=feedback_df_sorted["Model naam"],
             y=feedback_df_sorted["👎"],
             name="👎 Dislikes",
-            marker_color="red"
+            marker_color="#E2725B"
         ))
         fig.update_layout(
             barmode="group",
@@ -195,12 +208,28 @@ with tab5:
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        fig_score = px.line(
+        fig_score = px.bar(
             feedback_df_sorted,
-            x="model",
-            y="Gemiddelde beoordeling",
-            markers=True,
-            title="Gemiddelde gebruikersbeoordeling per model"
+            x="Gemiddelde beoordeling",
+            y="Model naam",
+            orientation="h",
+            text="Gemiddelde beoordeling",
+            title="Gemiddelde gebruikersbeoordeling per model",
+            color="Gemiddelde beoordeling",
+            color_continuous_scale=[
+                (0.0, "#E2725B"),
+                (0.5, "#EEA400"),
+                (1.0, "#3AAA35"),
+            ],
+            range_color=(0, 10),
         )
-        fig_score.update_layout(yaxis_title="Gemiddelde beoordeling", xaxis_title="Model", height=400)
+        fig_score.update_layout(
+            xaxis_title="Gemiddelde beoordeling",
+            yaxis_title="Model",
+            height=400,
+            coloraxis_showscale=False)
+        fig_score.update_traces(
+            textfont=dict(size=13, color="black"),
+            textposition="inside"
+        )
         st.plotly_chart(fig_score, use_container_width=True)

@@ -92,10 +92,18 @@ with tab4:
 
 with tab5:
     st.subheader("Overzicht statistieken")
+    kleuren = ["#EEA400", "#36a9e1", "#3AAA35", "#00A79F"]
 
     msg_counts = pd.DataFrame(get_message_counts_by_channel())
     if not msg_counts.empty:
-        fig_msgs = px.bar(msg_counts, x="kanaal", y="aantal", title="Berichten per kanaal")
+        fig_msgs = px.bar(
+            msg_counts,
+            x="kanaal",
+            y="aantal",
+            title="Berichten per kanaal",
+            color="kanaal",
+            color_discrete_sequence=kleuren,
+        )
         st.plotly_chart(fig_msgs, use_container_width=True)
         st.dataframe(msg_counts, use_container_width=True)
     else:
@@ -103,7 +111,14 @@ with tab5:
 
     chat_counts = get_chat_counts_by_user()
     if not chat_counts.empty:
-        fig_chats = px.bar(chat_counts, x="user_id", y="Aantal chats", title="Chats per gebruiker")
+        fig_chats = px.bar(
+            chat_counts,
+            x="Naam",
+            y="Aantal chats",
+            title="Chats per gebruiker",
+            color="Naam",
+            color_discrete_sequence=kleuren,
+        )
         st.plotly_chart(fig_chats, use_container_width=True)
         st.dataframe(chat_counts, use_container_width=True)
     else:
@@ -111,7 +126,14 @@ with tab5:
 
     note_counts = get_note_counts_by_user()
     if not note_counts.empty:
-        fig_notes = px.bar(note_counts, x="user_id", y="Aantal notities", title="Notities per gebruiker")
+        fig_notes = px.bar(
+            note_counts,
+            x="Naam",
+            y="Aantal notities",
+            title="Notities per gebruiker",
+            color="Naam",
+            color_discrete_sequence=kleuren,
+        )
         st.plotly_chart(fig_notes, use_container_width=True)
         st.dataframe(note_counts, use_container_width=True)
     else:
