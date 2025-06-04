@@ -124,7 +124,7 @@ with tab1:
                 details.append(f"**Tags:** {', '.join(selected_row['Tags'])}")
 
             st.markdown("""
-                <div style="background-color:#36A9E1; padding:16px; border-radius:12px; color:#000000;">
+                <div style="background-color:#36a9e1; padding:16px; border-radius:12px; color:#000000;">
                 <b>Geüpload op:</b> 2025-05-30 11:03<br>
                 <b>Bijgewerkt op:</b> 2025-05-30 11:03<br>
                 <b>Bestandsgrootte:</b> 6.81 KB<br>

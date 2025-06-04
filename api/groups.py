@@ -6,10 +6,41 @@ import datetime
 from .config import URL, HEADERS, JSON_HEADERS, timestamp_to_datetime
 
 def get_groups():
-    url = f"{URL}/groups/"
-    response = requests.get(url, headers=HEADERS)
-    response.raise_for_status()
-    return response.json()
+    """Haalt de beschikbare groepen op en formateert de timestamp velden."""
+    response = requests.get(f"{URL}/groups/", headers=HEADERS)
+    if response.status_code != 200:
+        return []
+
+    try:
+        data = response.json()
+    except ValueError:
+        return []
+
+    if isinstance(data, dict) and "groups" in data:
+        groups = data["groups"]
+    else:
+        groups = data
+
+    formatted = []
+    for g in groups:
+        formatted.append(
+            {
+                "id": g.get("id"),
+                "name": g.get("name"),
+                "description": g.get("description", ""),
+                "user_ids": g.get("user_ids") or g.get("users", []),
+                "permissions": g.get("permissions", {}),
+                "created_at": timestamp_to_datetime(
+                    g.get("created_at") or g.get("created")
+                ),
+                "updated_at": timestamp_to_datetime(
+                    g.get("updated_at") or g.get("updated")
+                ),
+            }
+        )
+
+    return formatted
+
 
 def create_group(name, description="", permissions=None):
     url = f"{URL}/groups/create"

@@ -25,11 +25,15 @@ def get_knowledge():
     filtered_data = []
 
     for i in knowledge:
-        filtered_data.append({
-            "name": i.get('name'),
-            "knowledge_id": i.get('id'),
-            })
-        
+        filtered_data.append(
+            {
+                "name": i.get("name"),
+                "knowledge_id": i.get("id"),
+                "created_at": timestamp_to_datetime(i.get("created_at")),
+                "updated_at": timestamp_to_datetime(i.get("updated_at")),
+            }
+        )
+
     return filtered_data
 
 def get_knowledge_by_id(knowledge_id):

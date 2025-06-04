@@ -151,6 +151,10 @@ if models:
         column_config["image"] = st.column_config.ImageColumn(
             "Profielfoto", help="Profielfoto van het model"
         )
+    if "kennisbanken" in model_df.columns:
+        model_df["kennisbanken"] = model_df["kennisbanken"].apply(lambda x: ", ".join(x) if isinstance(x, list) else x)
+        column_config["kennisbanken"] = st.column_config.TextColumn("Kennisbanken", width="medium")
+
     if "beschrijving" in model_df.columns:
         column_config["beschrijving"] = st.column_config.TextColumn(
             "beschrijving", width="medium"
@@ -163,6 +167,9 @@ if models:
         cols = [c for c in model_df.columns if c not in ["metadata"]]
     if "image" in cols and "Chatbot naam" in cols:
         cols.insert(cols.index("Chatbot naam"), cols.pop(cols.index("image")))
+    if "kennisbanken" in cols and "Chatbot naam" in cols:
+        cols.insert(cols.index("Chatbot naam") + 1, cols.pop(cols.index("kennisbanken")))
+
     st.dataframe(
         model_df[cols].head(),
         use_container_width=True,

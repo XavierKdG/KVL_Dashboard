@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from api.models import get_models, get_basemodels
+from api.models import get_models, get_basemodels, update_model_description
 from api.chats import get_chat_usage_summary
 from api.evaluations import get_feedback_summary
 import plotly.express as px
@@ -49,6 +49,13 @@ with tab1:
     else:
         df_models_sorted = df_models.sort_values("datum aangemaakt", ascending=oplopend)
 
+    def save_desc(model_id, key):
+        desc = st.session_state.get(key, '')
+        result = update_model_description(model_id, desc)
+        if 'success' in result:
+            st.success(result['success'])
+        else:
+            st.error(result.get('error', 'Onbekende fout'))
     for index, row in df_models_sorted.iterrows():
 
             with st.container():
@@ -61,13 +68,22 @@ with tab1:
 
                 with cols[1]:
                     st.markdown(f"### {row['Chatbot naam']}")
-                    st.markdown(f"{row['beschrijving'] or '_Geen beschrijving beschikbaar_'}")
+                    st.text_area(
+                        "Beschrijving",
+                        value=row['beschrijving'] or "",
+                        key=f"desc_{index}",
+                        on_change=save_desc,
+                        args=(row['model_id'], f"desc_{index}")
+                    )
 
                 with cols[2]:
                     st.markdown(f"🕓 Aangemaakt: {row['datum aangemaakt'].strftime('%Y-%m-%d')}")
                     st.markdown(f"🔄 Laatste update: {row['laatst bijgewerkt'].strftime('%Y-%m-%d')}")
-            
-                st.markdown("---")
+                    if row.get("kennisbanken"):
+                        kb_list = row["kennisbanken"]
+                        names = ", ".join(kb_list) if isinstance(kb_list, list) else str(kb_list)
+                        st.markdown(f"📚 Kennisbanken: {names}")
+                st.divider()
 
 with tab2:
     st.subheader("🔖 Overzicht van alle tags met bijbehorende modellen")
