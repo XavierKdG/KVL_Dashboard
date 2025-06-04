@@ -92,18 +92,40 @@ with tab2:
         for groep in groepen:
             with st.expander(f"{groep['name']}"):
                 leden_ids = groep.get("user_ids", []) or groep.get("users", [])
-                leden_namen = []
-
-                for lid in leden_ids:
-                    gebruiker = gebruikers_map.get(lid if isinstance(lid, str) else lid.get("id"))
-                    if gebruiker:
-                        naam = gebruiker.get("Naam", "Onbekend")
-                        email = gebruiker.get("Email", "-")
-                        leden_namen.append(f"• **{naam}** – _{email}_")
-
-                if leden_namen:
+                if leden_ids:
                     st.markdown("**👥 Groepsleden:**")
-                    st.markdown("\n".join(leden_namen))  
+                    for lid in leden_ids:
+                        gebruiker = gebruikers_map.get(lid if isinstance(lid, str) else lid.get("id"))
+                        if not gebruiker:
+                            continue
+
+                        cols = st.columns([1, 5])
+                        with cols[0]:
+                            profiel_url = gebruiker.get("Profielafbeelding")
+                            if profiel_url and profiel_url.startswith("data:image"):
+                                st.image(profiel_url, width=40)
+                            else:
+                                st.markdown(
+                                    """
+                                    <div style='
+                                        width:40px;
+                                        height:40px;
+                                        border-radius:50%;
+                                        background:#ccc;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        font-size:20px;
+                                        color:#fff;
+                                        margin: 0 auto;
+                                    '>?</div>
+                                    """,
+                                    unsafe_allow_html=True,
+                                )
+                        with cols[1]:
+                            naam = gebruiker.get("Naam", "Onbekend")
+                            email = gebruiker.get("Email", "-")
+                            st.markdown(f"**{naam}** – _{email}_") 
                 else:
                     st.markdown("**👥 Groepsleden:** _Geen leden in deze groep._")
                 

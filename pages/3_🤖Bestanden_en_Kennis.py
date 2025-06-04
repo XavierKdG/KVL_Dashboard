@@ -7,7 +7,7 @@ import plotly.express as px
 
 from auth import require_login
 from api.config import timestamp_to_datetime
-from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, list_files_in_knowledgebase, get_all_collections
+from api.knowledge import get_knowledge, get_knowledge_by_id, update_file_in_knowledgebase, add_file_to_knowledgebase, list_files_in_knowledgebase
 from api.files import upload_file
 
 require_login()
@@ -124,7 +124,7 @@ with tab1:
                 details.append(f"**Tags:** {', '.join(selected_row['Tags'])}")
 
             st.markdown("""
-                <div style="background-color:#00A79F; padding:16px; border-radius:12px; color:#000000;">
+                <div style="background-color:#36A9E1; padding:16px; border-radius:12px; color:#000000;">
                 <b>Geüpload op:</b> 2025-05-30 11:03<br>
                 <b>Bijgewerkt op:</b> 2025-05-30 11:03<br>
                 <b>Bestandsgrootte:</b> 6.81 KB<br>
@@ -132,8 +132,6 @@ with tab1:
                 <b>Collectie:</b> f6af2b5c-e116-4a22-8c13-e2e08603d5a4
                 </div>
                 """, unsafe_allow_html=True)
-
-
 
 with tab2:
     st.subheader("📈 Bestandstrends")
