@@ -218,11 +218,12 @@ with tab3:
         summary_rows.append({"Kennisbank": naam, "Aantal bestanden": aantal, "Laatst bijgewerkt": laatst})
 
     if summary_rows:
+        kleuren = ["#EEA400", "#36a9e1", "#3AAA35", "#00A79F"]
         df_summary = pd.DataFrame(summary_rows)
         df_summary["Laatst bijgewerkt"] = pd.to_datetime(df_summary["Laatst bijgewerkt"])
         df_summary.sort_values("Aantal bestanden", ascending=False, inplace=True)
         st.dataframe(df_summary, use_container_width=True)
-        fig = px.bar(df_summary, x="Kennisbank", y="Aantal bestanden", title="Bestanden per kennisbank")
+        fig = px.bar(df_summary, x="Kennisbank", y="Aantal bestanden", title="Bestanden per kennisbank", color='Kennisbank', color_discrete_sequence=kleuren)
         st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("Geen kennisbankgegevens beschikbaar.")
