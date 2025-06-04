@@ -116,18 +116,103 @@ def update_model_description(model_id: str, description: str) -> dict:
     if not model:
         return {"error": "Model niet gevonden"}
 
-    meta = model.get("meta", {})
+    meta = model.get("meta", {}) or {}
     meta["description"] = description
 
-    payload = {
-        "name": model.get("name", ""),
+    model["meta"] = meta
+    model["updated_at"] = int(datetime.datetime.utcnow().timestamp() * 1_000_000_000)
+
+    url = f"{URL}/models/model/update?id={model_id}"
+    response = requests.post(url, headers=JSON_HEADERS, json=model)
+
+    if response.status_code == 200:
+        return {"success": "Beschrijving bijgewerkt"}
+    return {"error": f"Updaten mislukt: {response.status_code} - {response.text}"}
+
+
+
+def _update_model_tags(model_id: str, tags: list, model: dict | None = None) -> dict:
+    """Helper om de tags voor een model bij te werken."""
+    if not model:
+        model = get_model_by_id(model_id)
+    if not model:
+        return {"error": "Model niet gevonden"}
+
+    meta = model.get("meta", {}).copy()
+    meta["tags"] = [{"name": t} for t in tags]
+
+    payload = model.copy()
+    payload.update({
+        "id": model_id,
         "meta": meta,
-        "params": model.get("params", {}),
-    }
+    })
 
     url = f"{URL}/models/model/update?id={model_id}"
     response = requests.post(url, headers=JSON_HEADERS, json=payload)
 
     if response.status_code == 200:
-        return {"success": "Beschrijving bijgewerkt"}
+        return {"success": "Modeltags bijgewerkt"}
     return {"error": f"Updaten mislukt: {response.status_code} - {response.text}"}
+
+def add_tag_to_model(model_id: str, tag: str) -> dict:
+    """Voeg een tag toe aan een model."""
+    if not tag:
+        return {"error": "Tag mag niet leeg zijn"}
+
+    model = get_model_by_id(model_id)
+    if not model:
+        return {"error": "Model niet gevonden"}
+
+    meta = model.get("meta", {})
+    raw = meta.get("tags", [])
+    tags = []
+    for t in raw:
+        if isinstance(t, dict):
+            name = t.get("name")
+        else:
+            name = str(t)
+        if name:
+            tags.append(name)
+
+    if tag in tags:
+        return {"info": "Tag bestaat al"}
+
+    tags.append(tag)
+    return _update_model_tags(model_id, tags, model)
+
+
+def remove_tag_from_model(model_id: str, tag: str) -> dict:
+    """Verwijder een tag van een model."""
+    model = get_model_by_id(model_id)
+    if not model:
+        return {"error": "Model niet gevonden"}
+
+    meta = model.get("meta", {})
+    raw = meta.get("tags", [])
+    tags = []
+    for t in raw:
+        if isinstance(t, dict):
+            name = t.get("name")
+        else:
+            name = str(t)
+        if name:
+            tags.append(name)
+
+    if tag not in tags:
+        return {"info": "Tag niet gevonden"}
+
+    tags = [t for t in tags if t != tag]
+    return _update_model_tags(model_id, tags, model)
+
+
+def get_all_tags() -> list:
+    """Haal een unieke lijst van alle tags uit basis- en custom modellen."""
+    all_tags = set()
+    for m in get_models():
+        for t in m.get("tags", []):
+            all_tags.add(t)
+    for b in get_basemodels():
+        for t in b.get("tags", []):
+            all_tags.add(t)
+    return sorted(all_tags)
+

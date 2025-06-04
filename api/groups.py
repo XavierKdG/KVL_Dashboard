@@ -23,12 +23,38 @@ def get_groups():
 
     formatted = []
     for g in groups:
+        access_map = {}
+        perm_map = g.get("model_permissions")
+        if isinstance(perm_map, dict):
+            for mid, mode in perm_map.items():
+                access_map[str(mid)] = str(mode) if mode else "read"
+
+        raw_models = g.get("model_ids") or g.get("models", [])
+        if isinstance(raw_models, list):
+            for m in raw_models:
+                if isinstance(m, dict):
+                    mid = m.get("id") or m.get("model_id") or m.get("name")
+                    if mid is not None:
+                        perm = m.get("access") or m.get("permission")
+                        if perm is None:
+                            perm = "write" if m.get("write") else "read"
+                        access_map.setdefault(str(mid), perm)
+                else:
+                    access_map.setdefault(str(m), access_map.get(str(m), "read"))
+        elif isinstance(raw_models, dict):
+            for mid, val in raw_models.items():
+                if isinstance(val, str):
+                    access_map[str(mid)] = val
+                elif isinstance(val, bool):
+                    access_map[str(mid)] = "write" if val else "read"
         formatted.append(
             {
                 "id": g.get("id"),
                 "name": g.get("name"),
                 "description": g.get("description", ""),
                 "user_ids": g.get("user_ids") or g.get("users", []),
+                "model_ids": list(access_map.keys()),
+                "model_permissions": access_map,
                 "permissions": g.get("permissions", {}),
                 "created_at": timestamp_to_datetime(
                     g.get("created_at") or g.get("created")
@@ -40,7 +66,6 @@ def get_groups():
         )
 
     return formatted
-
 
 def create_group(name, description="", permissions=None):
     url = f"{URL}/groups/create"
@@ -60,10 +85,34 @@ def get_group_by_id(group_id):
 
 def update_group(group):
     group_id = group.get("id")
+    raw_permissions = group.get("model_permissions")
+    model_permissions = {}
+    if isinstance(raw_permissions, dict):
+        for mid, perm in raw_permissions.items():
+            model_permissions[str(mid)] = perm or "read"
+
+    raw_models = group.get("model_ids") or group.get("models", [])
+    if isinstance(raw_models, list):
+        for m in raw_models:
+            if isinstance(m, dict):
+                mid = m.get("id") or m.get("model_id") or m.get("name")
+                if mid is not None and str(mid) not in model_permissions:
+                    model_permissions[str(mid)] = "write" if m.get("write") else "read"
+            else:
+                if str(m) not in model_permissions:
+                    model_permissions[str(m)] = "read"
+    elif isinstance(raw_models, dict):
+        for mid, val in raw_models.items():
+            if str(mid) not in model_permissions:
+                if isinstance(val, str):
+                    model_permissions[str(mid)] = val
+                elif isinstance(val, bool):
+                    model_permissions[str(mid)] = "write" if val else "read"
     payload = {
         "name": group.get("name", ""),
         "description": group.get("description", ""),
-        "user_ids": group.get("user_ids", [])  
+        "user_ids": group.get("user_ids", []),
+        "model_permissions": model_permissions,
     }
     response = requests.post(f"{URL}/groups/id/{group_id}/update", headers=HEADERS, json=payload)
     if response.status_code == 200:
@@ -115,4 +164,54 @@ def remove_user_from_group(group_id: str, user_id: str) -> dict:
     response = requests.post(f"{URL}/groups/id/{group_id}/update", headers=HEADERS, json=payload)
     if response.status_code == 200:
         return {"success": "Gebruiker verwijderd uit groep."}
+    return {"error": f"Verwijderen mislukt: {response.status_code} - {response.text}"}
+
+
+def add_model_to_group(group_id: str, model_id: str, write: bool = False) -> dict:
+    group = get_group_by_id(group_id)
+    if "error" in group:
+        return group
+
+    perms = group.get("model_permissions")
+    if not isinstance(perms, dict):
+        perms = {}
+    current = perms.get(str(model_id))
+    new_perm = "write" if write else "read"
+    if current == new_perm:
+        return {"info": "Model zit al in deze groep met dezelfde rechten."}
+
+    perms[str(model_id)] = new_perm
+    payload = {
+        "name": group.get("name", ""),
+        "description": group.get("description", ""),
+        "user_ids": group.get("user_ids", []),
+        "model_permissions": perms,
+    }
+
+    response = requests.post(f"{URL}/groups/id/{group_id}/update", headers=HEADERS, json=payload)
+    if response.status_code == 200:
+        return {"success": "Model toegevoegd aan groep."}
+    return {"error": f"Toevoegen mislukt: {response.status_code} - {response.text}"}
+
+
+def remove_model_from_group(group_id: str, model_id: str) -> dict:
+    group = get_group_by_id(group_id)
+    if "error" in group:
+        return group
+
+    perms = group.get("model_permissions")
+    if not isinstance(perms, dict) or str(model_id) not in perms:
+        return {"info": "Model zit niet in deze groep."}
+
+    perms.pop(str(model_id))
+    payload = {
+        "name": group.get("name", ""),
+        "description": group.get("description", ""),
+        "user_ids": group.get("user_ids", []),
+        "model_permissions": perms,
+    }
+
+    response = requests.post(f"{URL}/groups/id/{group_id}/update", headers=HEADERS, json=payload)
+    if response.status_code == 200:
+        return {"success": "Model verwijderd uit groep."}
     return {"error": f"Verwijderen mislukt: {response.status_code} - {response.text}"}

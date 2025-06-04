@@ -159,23 +159,37 @@ if models:
         column_config["beschrijving"] = st.column_config.TextColumn(
             "beschrijving", width="medium"
         )
+    if "datum aangemaakt" in model_df.columns:
+        model_df["datum aangemaakt"] = pd.to_datetime(
+            model_df["datum aangemaakt"], errors="coerce"
+        )
     if "laatst bijgewerkt" in model_df.columns:
         model_df["laatst bijgewerkt"] = pd.to_datetime(
             model_df["laatst bijgewerkt"], errors="coerce"
         )
-        model_df = model_df.sort_values("laatst bijgewerkt", ascending=False)
-        cols = [c for c in model_df.columns if c not in ["metadata"]]
+    sort_col = ("datum aangemaakt" if "datum aangemaakt" in model_df.columns else "laatst bijgewerkt")
+    model_df = model_df.sort_values(sort_col, ascending=False)
+    cols = [c for c in model_df.columns if c not in ["metadata"]]
     if "image" in cols and "Chatbot naam" in cols:
         cols.insert(cols.index("Chatbot naam"), cols.pop(cols.index("image")))
     if "kennisbanken" in cols and "Chatbot naam" in cols:
         cols.insert(cols.index("Chatbot naam") + 1, cols.pop(cols.index("kennisbanken")))
 
     st.dataframe(
-        model_df[cols].head(),
+        model_df[cols].head(5),
         use_container_width=True,
         column_config=column_config,
         hide_index=True,
     )
+    
+    if len(model_df) > 5:
+        with st.expander("Toon alle modellen"):
+            st.dataframe(
+                model_df[cols],
+                use_container_width=True,
+                column_config=column_config,
+                hide_index=True,
+            )
 
 if channels:
     st.subheader("📢 Nieuwste kanalen")

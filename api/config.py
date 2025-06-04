@@ -11,13 +11,26 @@ HEADERS = {"Authorization": f"Bearer {API_KEY}"}
 JSON_HEADERS = {**HEADERS, "Content-Type": "application/json"}
 
 def timestamp_to_datetime(ts):
-    if not ts or ts <= 0:
+    """Converteer diverse timestamp-formaten naar een leesbare datum."""
+    if ts is None:
         return "-"
 
-    if ts > 1e12:
-        ts = ts / 1_000_000_000
     try:
-        return datetime.datetime.fromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+        ts_val = float(ts)
+    except Exception:
+        return "ongeldige datum"
+
+    if ts_val <= 0:
+        return "-"
+    if ts_val > 1e18: 
+        ts_val /= 1_000_000_000
+    elif ts_val > 1e15:  
+        ts_val /= 1_000_000
+    elif ts_val > 1e12:  
+        ts_val /= 1_000
+
+    try:
+        return datetime.datetime.fromtimestamp(ts_val).strftime("%Y-%m-%d %H:%M:%S")
     except Exception:
         return "ongeldige datum"
 
