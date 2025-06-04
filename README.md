@@ -10,7 +10,7 @@ Een Streamlit-dashboard ontwikkeld bij KVL voor het beheren van AI-bestanden, ke
 - ✅ Detailweergave van bestanden inclusief content type en collectie
 - ✅ Chatkanaalbeheer via OpenWebUI  
 - ✅ Weergave van berichten per kanaal  
-- ✅ Overzicht van beschikbare AI-modellen (via Ollama of OpenWebUI)  
+- ✅ Overzicht van beschikbare AI-modellen  
 - ✅ Google OAuth-login (via Streamlit-auth)  
 - 🔒 API-key en authenticatieconfiguratie via `.env` en `secrets.toml`  
 
@@ -21,7 +21,7 @@ Een Streamlit-dashboard ontwikkeld bij KVL voor het beheren van AI-bestanden, ke
 ```bash
 git clone https://github.com/XavierKdG/KVL_Dashboard.git
 cd KVL_Dashboard
-````
+```
 
 2. **Installeer dependencies**
 
@@ -57,13 +57,19 @@ server_metadata_url = "https://accounts.google.com/.well-known/openid-configurat
 5. **Start het dashboard**
 
 ```bash
-streamlit run app.py
+streamlit run 🏠Main.py
 ```
 
 Indien `streamlit` niet wordt herkend:
 
 ```bash
-python -m streamlit run app.py
+python -m streamlit run 🏠Main.py
+```
+
+6. **Met Docker**
+
+```bash
+docker-compose up --build
 ```
 
 ## ✅ Vereisten
@@ -76,7 +82,7 @@ python -m streamlit run app.py
 pip install Authlib
 ```
 
-* OpenWebUI draait lokaal op poort `8081`
+* OpenWebUI draait lokaal op poort `8080`
 * (Optioneel) Lokale Ollama-service voor modeloverzicht
 
 ## 🔒 Beveiliging & Authenticatie
@@ -84,6 +90,5 @@ pip install Authlib
 * OAuth-authenticatie via Google (OpenID Connect)
 * API-key vereist voor toegang tot backend
 * CORS & cookiebeheer automatisch geregeld via Streamlit-auth
-
 
 
