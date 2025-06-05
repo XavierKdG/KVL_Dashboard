@@ -315,25 +315,54 @@ with tab3:
     st.caption(
         "Een overzicht van alle beschikbare basismodellen waarop de custom modellen zijn gebouwd. Hier zie je per model de naam, het aanmaakmoment en indien beschikbaar een visuele representatie."
     )
+    if df_basemodels.empty: 
+        st.info("Geen basismodellen gevonden.")
+    else:
+        newest_first = st.toggle("Nieuwste eerst", value=True)
 
-    for _, row in df_basemodels.iterrows():
-        col1, col2 = st.columns([1, 6])
+        tag_series = df_basemodels.get("tags", pd.Series(dtype=object))
+        available_tags = sorted(
+            {
+                tag
+                for tag_list in tag_series.dropna()
+                for tag in (tag_list if isinstance(tag_list, list) else [])
+            }
+        )
+        selected_tag = st.selectbox(
+            "Filter op tag",
+            options=["Alle"] + available_tags,
+            index=0,
+        )
 
-        with col1:
-            image_url = row.get("image")
-            if isinstance(image_url, str) and (
-                image_url.startswith("http")
-                or image_url.startswith("data:image")
-            ):
-                st.image(image_url, width=60)
-            else:
-                st.markdown("❓")
+        filtered_df = df_basemodels.copy()
+        if selected_tag != "Alle":
+            filtered_df = filtered_df[
+                filtered_df["tags"].apply(
+                    lambda t: selected_tag in t if isinstance(t, list) else False
+                )
+            ]
 
-        with col2:
-            clean_name = str(row["Chatbot naam"]).replace("*", "")
-            st.markdown(f"**{clean_name}**")
-            st.caption(f"Aangemaakt op: {row['datum aangemaakt']}")
+        filtered_df = filtered_df.sort_values(
+            "datum aangemaakt", ascending=not newest_first
+        )
 
+        for _, row in filtered_df.iterrows():
+            col1, col2 = st.columns([1, 6])
+
+            with col1:
+                image_url = row.get("image")
+                if isinstance(image_url, str) and (
+                    image_url.startswith("http")
+                    or image_url.startswith("data:image")
+                ):
+                    st.image(image_url, width=60)
+                else:
+                    st.markdown("❓")
+
+            with col2:
+                clean_name = str(row["Chatbot naam"]).replace("*", "")
+                st.markdown(f"**{clean_name}**")
+                st.caption(f"Aangemaakt op: {row['datum aangemaakt']}")
 
 with tab4:
     st.subheader("📊 Meest gebruikte modellen op basis van chats")
@@ -365,7 +394,22 @@ with tab4:
             yaxis_title=None, xaxis_title="Aantal chats", height=400
         )
         st.plotly_chart(fig, use_container_width=True)
-        st.dataframe(usage_df_sorted[::-1], use_container_width=True)
+        
+        total_chats = int(usage_df_sorted["Aantal chats"].sum())
+        top_model = usage_df_sorted.iloc[-1]
+        top_three_total = int(usage_df_sorted.tail(3)["Aantal chats"].sum())
+        top_three_share = top_three_total / total_chats * 100 if total_chats else 0
+
+        col1, col2 = st.columns(2)
+        col1.metric("Totaal aantal chats", total_chats)
+        col2.metric(
+            "Meest gebruikte model",
+            prettify_model_name(top_model["model"]),
+            f"{int(top_model['Aantal chats'])} chats",
+        )
+        st.caption(
+            f"Top 3 modellen zijn goed voor {top_three_share:.1f}% van alle chats."
+        )
 
 with tab5:
     st.subheader("📝 Gebruikersfeedback per model")
