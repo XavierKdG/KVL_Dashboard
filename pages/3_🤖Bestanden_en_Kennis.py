@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import os
 import plotly.express as px
+import io
 
 from auth import require_login
 from api.config import timestamp_to_datetime
@@ -235,8 +236,37 @@ with tab4:
     if "file_uploader_key" not in st.session_state:
         st.session_state.file_uploader_key = "uploader_1"
 
-    bestanden = st.file_uploader("Stap 1: Kies een of meerdere bestanden", type=None, accept_multiple_files=True, key=st.session_state.file_uploader_key)
+    upload_mode = st.radio("Upload type", ["Bestand", "Tekst"], horizontal=True)
 
+    bestanden = []
+    if upload_mode == "Bestand":
+        bestanden = st.file_uploader(
+            "Stap 1: Kies een of meerdere bestanden",
+            type=None,
+            accept_multiple_files=True,
+            key=st.session_state.file_uploader_key,
+        )
+    else:
+        text_name = st.text_input("Bestandsnaam", value="tekst.txt")
+        tekst_input = st.text_area("Voer tekst in")
+        if st.button("Upload tekst"):
+            if tekst_input.strip():
+                txt_file = io.BytesIO(tekst_input.encode("utf-8"))
+                txt_file.name = text_name or "tekst.txt"
+                txt_file.type = "text/plain"
+                result = upload_file(txt_file)
+                if "error" in result:
+                    st.error(result["error"])
+                else:
+                    if "uploaded_files" not in st.session_state:
+                        st.session_state.uploaded_files = []
+                    st.session_state.uploaded_files.append(
+                        {"name": txt_file.name, "file_id": result["file_id"]}
+                    )
+                    st.success(f"Tekst '{txt_file.name}' geüpload")
+            else:
+                st.warning("Geen tekst ingevoerd.")
+                
     if "uploaded_files" not in st.session_state:
         st.session_state.uploaded_files = []  
 

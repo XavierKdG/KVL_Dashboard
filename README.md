@@ -33,7 +33,7 @@ pip install -r requirements.txt
 
 3. **Voeg `.env` toe**
 
-Plaats in de root van het project een `.env` bestand met daarin:
+Er staat een voorbeeldbestand `.env.example` in de repository. Kopieer of hernoem dit naar `.env` en vul je eigen waarden in:
 
 ```env
 API_KEY=jouw_api_key

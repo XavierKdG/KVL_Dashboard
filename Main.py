@@ -17,6 +17,7 @@ from api import (
     get_feedback_summary,
     get_all_chats,
     get_feedback,
+    get_chat_counts_by_user,
 )
 
 def count_recent(items, keys):
@@ -47,6 +48,7 @@ all_chats = []
 feedback_all = []
 chat_summary = pd.DataFrame()
 feedback_summary = pd.DataFrame()
+chat_user_counts = pd.DataFrame()
 
 with st.spinner("Data ophalen..."):
     try:
@@ -77,6 +79,10 @@ with st.spinner("Data ophalen..."):
         all_chats = get_all_chats()
     except Exception:
         st.warning("Kon chats niet ophalen.")
+    try:
+        chat_user_counts = get_chat_counts_by_user()
+    except Exception:
+        st.warning("Kon chatgebruik per gebruiker niet ophalen.")
     try:
         feedback_summary = get_feedback_summary()
     except Exception:
@@ -181,7 +187,7 @@ if models:
         column_config=column_config,
         hide_index=True,
     )
-    
+
     if len(model_df) > 5:
         with st.expander("Toon alle modellen"):
             st.dataframe(
@@ -201,36 +207,17 @@ if channels:
         channels_df = channels_df.sort_values("laatst bijgewerkt", ascending=False)
     st.dataframe(channels_df.head(), use_container_width=True)
 
-if not chat_summary.empty:
-    st.subheader("📈 Chatgebruik per model")
+if not chat_user_counts.empty:
+    st.subheader("📈 Chatgebruik per gebruiker")
     kleuren = ["#EEA400", "#36a9e1", "#3AAA35", "#00A79F"]
-    fig = px.bar(chat_summary, x="model", y="Aantal chats", color="model",
-                 color_discrete_sequence=kleuren)
-    fig.update_layout(showlegend=False)
-    model_df = model_df.sort_values("laatst bijgewerkt", ascending=False)
-    cols = [c for c in model_df.columns if c not in ["image", "metadata"]]
-    st.dataframe(
-        model_df[cols].head(),
-        use_container_width=True,
-        column_config=column_config,
+    fig = px.bar(
+        chat_user_counts.sort_values("Aantal chats", ascending=False),
+        x="Naam",
+        y="Aantal chats",
+        color="Naam",
+        color_discrete_sequence=kleuren,
     )
-
-if channels:
-    st.subheader("📢 Nieuwste kanalen")
-    channels_df = pd.DataFrame(channels)
-    if "laatst bijgewerkt" in channels_df.columns:
-        channels_df["laatst bijgewerkt"] = pd.to_datetime(
-            channels_df["laatst bijgewerkt"], errors="coerce"
-        )
-        channels_df = channels_df.sort_values("laatst bijgewerkt", ascending=False)
-    st.dataframe(channels_df.head(), use_container_width=True)
-
-if not chat_summary.empty:
-    st.subheader("📈 Chatgebruik per model")
-    kleuren = ["#EEA400", "#36a9e1", "#3AAA35", "#00A79F"]
-    fig = px.bar(chat_summary, x="model", y="Aantal chats", color="model",
-                 color_discrete_sequence=kleuren)
-    fig.update_layout(showlegend=False)
+    fig.update_layout(showlegend=False, xaxis_title="Gebruiker")
     st.plotly_chart(fig, use_container_width=True)
 
 if not feedback_summary.empty:
