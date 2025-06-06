@@ -57,13 +57,13 @@ server_metadata_url = "https://accounts.google.com/.well-known/openid-configurat
 5. **Start het dashboard**
 
 ```bash
-streamlit run 🏠Main.py
+streamlit run Main.py
 ```
 
 Indien `streamlit` niet wordt herkend:
 
 ```bash
-python -m streamlit run 🏠Main.py
+python -m streamlit run Main.py
 ```
 
 6. **Met Docker**
